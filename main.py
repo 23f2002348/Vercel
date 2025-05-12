@@ -23,10 +23,17 @@ def root():
     return {"message": "Welcome to the Student Marks API. Use /api?name=X&name=Y to get marks."}
 
 @app.get("/api")
-def get_marks(name: List[str] = Query(None)):
-    if not name:
+async def get_marks(name: Optional[List[str]] = Query(default=None)):
+    # If name parameter is not provided, return empty list
+    if name is None:
         return {"marks": []}
-    result = [marks_lookup.get(n, None) for n in name]
+    
+    # Get marks for each name in the order they were provided
+    result = []
+    for n in name:
+        mark = marks_lookup.get(n)
+        result.append(mark)  # This will include None for names not in the dataset
+    
     return {"marks": result}
 
 # Add a catch-all route for debugging
