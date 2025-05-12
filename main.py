@@ -1,7 +1,6 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
-from typing import List
-import json
+from typing import List, Optional
 
 app = FastAPI()
 
@@ -9,7 +8,7 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_methods=["GET"],
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 
@@ -18,6 +17,23 @@ students_data = [{"name":"10X5qblMbP","marks":61},{"name":"x08q","marks":73},{"n
 
 # Create a lookup dictionary for faster access
 marks_lookup = {student["name"]: student["marks"] for student in students_data}
+
+@app.get("/")
+def root():
+    return {"message": "Welcome to the Student Marks API. Use /api?name=X&name=Y to get marks."}
+
+@app.get("/api")
+def get_marks(name: List[str] = Query(None)):
+    if not name:
+        return {"marks": []}
+    result = [marks_lookup.get(n, None) for n in name]
+    return {"marks": result}
+
+# Add a catch-all route for debugging
+@app.get("/{path:path}")
+def catch_all(path: str):
+    return {"message": f"Path '{path}' not found. Use /api?name=X&name=Y to get marks."}
+
 
 @app.get("/api")
 def get_marks(name: List[str] = []):
