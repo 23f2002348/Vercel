@@ -1,26 +1,23 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from typing import List
+import json
 
 app = FastAPI()
 
-# Enable CORS
+# Enable CORS for any origin
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_methods=["GET"],
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Static JSON object simulating marks of students
-marks_data = {
-    "Alice": 10,
-    "Bob": 20,
-    "Charlie": 30,
-    "David": 40
-}
+# Load the marks from the JSON file once at startup
+with open("q-vercel-python.json", "r") as f:
+    data = json.load(f)
+    marks_dict = {entry["name"]: entry["marks"] for entry in data}
 
 @app.get("/api")
-def get_marks(name: List[str] = []):
-    result = [marks_data.get(n, None) for n in name]
+async def get_marks(name: list[str] = []):
+    result = [marks_dict.get(n, None) for n in name]
     return {"marks": result}
